@@ -1,6 +1,11 @@
 # Productos API – Prueba Técnica
 
 Proyecto base para la prueba técnica de desarrollador **Java Spring Boot + JavaScript**.
+Por favor, una vez termines, responde al correo con:
+
+- El enlace a tu repositorio (rama con tu nombre).
+- Documento con las respuestas a las preguntas del punto 3.
+
 ---
 
 ## 1. Cómo clonar el proyecto
