@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -16,7 +17,20 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // --- MANEJAR 404 NOT FOUND ---
+    // --- ERROR 404 (URL no válida) ---
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoHandlerFound(NoHandlerFoundException ex) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                "Error en la solicitud",
+                "URL no válida",
+                status
+        );
+
+        return new ResponseEntity<>(response, status);
+    }
+    // --- MANEJAR 404 PRODUCTO (Producto no encontrado)---
     @ExceptionHandler(ProductoNoEncontradoException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(ProductoNoEncontradoException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
@@ -29,7 +43,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, status); // 404
     }
 
-    // --- MANEJAR 400 BAD REQUEST ---
+    // --- MANEJAR 400 BAD REQUEST (Stock insuficiente/Argumentos Inválidos) ---
     @ExceptionHandler({
             StockInsuficienteException.class,
             IllegalArgumentException.class,
@@ -37,7 +51,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleBadRequest(RuntimeException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        // Define el título del error basado en la excepción
+        // Define el título del error basado en la
         String errorTitle = "Petición Inválida";
         if (ex instanceof StockInsuficienteException) {
             errorTitle = "Stock Insuficiente";
@@ -52,31 +66,33 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleConversionMismatch(MethodArgumentTypeMismatchException ex){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String errorTitle;
+        String descripcion;
 
-    public void handleConversionMismatch(MethodArgumentTypeMismatchException ex) {
-
-        if (ex.getName().equals("categoria") && ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
-
+        if(ex.getName().equals("categoria") && ex.getRequiredType() != null && ex.getRequiredType().isEnum()){
             String valoresValidos = Arrays.stream(CategoriaProducto.values())
                     .map(Enum::toString)
                     .collect(Collectors.joining(", "));
 
-            throw new CategoriaNoEncontradoException(ex.getValue().toString(), valoresValidos);
+            errorTitle = "Categoría Inválida";
+            descripcion = String.format("Valor '%s' no es válido para la categoría. Las categorías válidas son: %s",
+                    ex.getValue(), valoresValidos);
+        }else {
+            errorTitle = "Fallo de Conversión de Tipo";
+            descripcion = String.format("El valor '%s' no es válido para el parámetro '%s' (tipo esperado: %s).",
+                    ex.getValue(), ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "desconocido");
         }
 
-        throw ex;
-    }
-
-    @ExceptionHandler(CategoriaNoEncontradoException.class)
-    public ResponseEntity<ApiErrorResponse> handleCategoriaNoEncontrada(CategoriaNoEncontradoException ex) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-
         ApiErrorResponse response = new ApiErrorResponse(
-                "Categoría Inválida", // <-- Título para este caso específico
-                ex.getMessage(),      // <-- Mensaje formateado de la excepción
+                errorTitle,
+                descripcion,
                 status
         );
-        return new ResponseEntity<>(response, status); // 400 Bad Request
+
+        return new ResponseEntity<>(response, status);
     }
+
 
 }

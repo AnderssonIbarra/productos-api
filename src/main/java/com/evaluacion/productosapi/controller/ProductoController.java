@@ -3,12 +3,8 @@ package com.evaluacion.productosapi.controller;
 import com.evaluacion.productosapi.entity.CategoriaProducto;
 import com.evaluacion.productosapi.entity.Producto;
 import com.evaluacion.productosapi.service.ProductoService;
-import com.evaluacion.productosapi.service.exception.CategoriaNoEncontradoException;
-import com.evaluacion.productosapi.service.exception.ProductoNoEncontradoException;
-import com.evaluacion.productosapi.service.exception.StockInsuficienteException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

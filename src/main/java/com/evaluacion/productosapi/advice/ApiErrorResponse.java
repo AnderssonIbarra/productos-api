@@ -1,14 +1,19 @@
 package com.evaluacion.productosapi.advice;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 
+@Getter
 public class ApiErrorResponse {
 
     private final String error;
     private final String descripcion;
-    private final LocalDateTime timestamp;
     private final int status;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private final LocalDateTime timestamp;
 
     public ApiErrorResponse(String error, String descripcion, HttpStatus status) {
         this.error = error;
@@ -17,19 +22,4 @@ public class ApiErrorResponse {
         this.status = status.value();
     }
 
-    public String getError() {
-        return error;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public int getStatus() {
-        return status;
-    }
 }
